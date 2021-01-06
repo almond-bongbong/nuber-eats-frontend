@@ -1,7 +1,8 @@
-import React from "react";
+import React from 'react';
+import LoggedOutRouter from './routers/logged-out-router';
 
 function App() {
-  return <div className="bg-black">hello</div>;
+  return <LoggedOutRouter />;
 }
 
 export default App;
