@@ -29,7 +29,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "tailwind:build": "tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css"
+    "tailwind:build": "tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css",
+    "preapollo:codegen": "rm -rf ./src/__generated__",
+    "apollo:codegen": "apollo client:codegen src/__generated__ --outputFlat --target=typescript"
   },
   "eslintConfig": {
     "extends": [
@@ -48,5 +50,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "apollo": "^2.32.1"
   }
 }
