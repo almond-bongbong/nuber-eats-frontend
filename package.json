@@ -25,12 +25,13 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
+    "prestart": "npm run apollo:codegen && npm run tailwind:build",
     "start": "npm run tailwind:build & react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "tailwind:build": "tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css",
-    "preapollo:codegen": "rm -rf ./src/__generated__",
+    "preapollo:codegen": "rimraf ./src/__generated__",
     "apollo:codegen": "apollo client:codegen src/__generated__ --outputFlat --target=typescript"
   },
   "eslintConfig": {
@@ -52,6 +53,7 @@
     ]
   },
   "devDependencies": {
-    "apollo": "^2.32.1"
+    "apollo": "^2.32.1",
+    "rimraf": "^3.0.2"
   }
 }
