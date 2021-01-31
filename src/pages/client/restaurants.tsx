@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { gql, useQuery } from '@apollo/client';
-import { RestaurantsPageQuery, RestaurantsPageQueryVariables, } from '../../__generated__/RestaurantsPageQuery';
+import qs from 'query-string';
+import {
+  RestaurantsPageQuery,
+  RestaurantsPageQueryVariables,
+} from '../../__generated__/RestaurantsPageQuery';
 import Restaurant from '../../components/restaurant';
+import { useForm } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
+
+interface SearchForm {
+  searchTerm: string;
+}
 
 const RESTAURANTS_QUERY = gql`
   query RestaurantsPageQuery($input: RestaurantsInput!) {
@@ -36,6 +46,8 @@ const RESTAURANTS_QUERY = gql`
 `;
 
 function Restaurants() {
+  const { register, handleSubmit, getValues } = useForm<SearchForm>();
+  const history = useHistory();
   const [page, setPage] = useState(1);
   const { data, loading } = useQuery<
     RestaurantsPageQuery,
@@ -46,14 +58,26 @@ function Restaurants() {
     },
   });
 
-  console.log(data);
+  const onSearchSubmit = () => {
+    history.push({
+      pathname: '/search',
+      search: qs.stringify({
+        term: getValues().searchTerm,
+      }),
+    });
+  };
 
   return (
     <div>
-      <form className="bg-gray-800 w-full py-40 flex items-center justify-center">
+      <form
+        onSubmit={handleSubmit(onSearchSubmit)}
+        className="bg-gray-800 w-full py-40 flex items-center justify-center"
+      >
         <input
+          ref={register({ required: true, min: 3 })}
           type="Search"
-          className="input rounded-md border-0 w-3/12"
+          name="searchTerm"
+          className="input rounded-md border-0 w-3/4 md:w-3/12"
           placeholder="Search restaurants..."
         />
       </form>
@@ -75,7 +99,7 @@ function Restaurants() {
               </div>
             ))}
           </div>
-          <div className="grid mt-16 grid-cols-3 gap-x-5 gap-y-10">
+          <div className="grid mt-16 md:grid-cols-3 gap-x-5 gap-y-10">
             {data?.allRestaurants.results?.map((restaurant) => (
               <Restaurant
                 key={restaurant.id}
