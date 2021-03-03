@@ -2,12 +2,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import FormError from '../components/form-error';
 import { gql, useMutation } from '@apollo/client';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import nuberLogo from '../images/logo.svg';
-import {
-  LoginMutation,
-  LoginMutationVariables,
-} from '../__generated__/LoginMutation';
+import { LoginMutation, LoginMutationVariables, } from '../__generated__/LoginMutation';
 import Button from '../components/button';
 import { Helmet } from 'react-helmet-async';
 import { emailRegexp } from '../utils/regexp';
@@ -30,7 +27,6 @@ const LOGIN_MUTATION = gql`
 `;
 
 export const Login = () => {
-  const history = useHistory();
   const { register, getValues, errors, handleSubmit, formState } = useForm<
     LoginForm
   >({

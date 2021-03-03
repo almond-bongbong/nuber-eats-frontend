@@ -8,6 +8,8 @@ import NotFound from '../pages/404';
 import ConfirmEmail from '../pages/user/confirm-email';
 import EditProfile from '../pages/user/edit-profile';
 import Search from '../pages/client/search';
+import Category from '../pages/client/category';
+import Restaurant from '../pages/client/restaurant';
 
 const ClientRouter = [
   <Route key="/" path="/" exact>
@@ -21,6 +23,12 @@ const ClientRouter = [
   </Route>,
   <Route key="search" path="/search">
     <Search />
+  </Route>,
+  <Route key="category" path="/category/:slug">
+    <Category />
+  </Route>,
+  <Route key="restaurant" path="/restaurant/:id">
+    <Restaurant />
   </Route>,
 ];
 

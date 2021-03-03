@@ -20,7 +20,7 @@ const authLink = setContext((operation, prevContext) => {
   return {
     headers: {
       ...prevContext.headers,
-      authorization: token || '',
+      authorization: localStorage.getItem(LOCALSTORAGE_TOKEN_KEY) || '',
     },
   };
 });

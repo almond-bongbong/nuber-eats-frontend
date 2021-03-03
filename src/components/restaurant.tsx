@@ -15,7 +15,7 @@ function Restaurant({
   categoryName,
 }: Props): ReactElement {
   return (
-    <Link to={`/${id}`} className="flex flex-col">
+    <Link to={`/restaurant/${id}`} className="flex flex-col">
       <div
         style={{ backgroundImage: `url(${coverImage})` }}
         className="bg-red-500 bg-cover bg-center mb-3 py-28"
