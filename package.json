@@ -40,7 +40,7 @@
     "preapollo:codegen": "rimraf ./src/__generated__",
     "apollo:codegen": "apollo client:codegen src/__generated__ --outputFlat --target=typescript",
     "test": "react-scripts test",
-    "test:coverage": "npm test -- --coverage"
+    "test:coverage": "npm test -- --coverage --watchAll=false"
   },
   "eslintConfig": {
     "extends": [

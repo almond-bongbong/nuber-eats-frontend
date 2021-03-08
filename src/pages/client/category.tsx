@@ -32,7 +32,7 @@ const CATEGORY_QUERY = gql`
 
 function Category(): ReactElement {
   const { slug } = useParams<Params>();
-  const { data, loading } = useQuery<CategoryQuery, CategoryQueryVariables>(
+  const { data } = useQuery<CategoryQuery, CategoryQueryVariables>(
     CATEGORY_QUERY,
     {
       variables: {
