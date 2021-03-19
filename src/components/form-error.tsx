@@ -5,7 +5,11 @@ interface Props {
 }
 
 function FormError({ errorMessage }: Props): ReactElement {
-  return <span className="font-medium text-red-500">{errorMessage}</span>;
+  return (
+    <span role="alert" className="font-medium text-red-500">
+      {errorMessage}
+    </span>
+  );
 }
 
 export default FormError;

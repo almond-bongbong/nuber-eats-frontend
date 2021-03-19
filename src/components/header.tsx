@@ -8,8 +8,6 @@ import useMe from '../hooks/useMe';
 function Header(): ReactElement {
   const { data } = useMe();
 
-  console.log(data?.me.email);
-
   return (
     <>
       {!data?.me.verified && (
