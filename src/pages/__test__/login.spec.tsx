@@ -1,17 +1,18 @@
 import { render, RenderResult, waitFor } from '@testing-library/react';
-import Login from '../login';
+import Login, { LOGIN_MUTATION } from '../login';
 import { ApolloProvider } from '@apollo/client';
-import { createMockClient } from 'mock-apollo-client';
+import { createMockClient, MockApolloClient } from 'mock-apollo-client';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
 describe('<Login />', () => {
   let renderResult: RenderResult;
+  let mockedClient: MockApolloClient;
 
   beforeEach(async () => {
     await waitFor(() => {
-      const mockedClient = createMockClient();
+      mockedClient = createMockClient();
 
       renderResult = render(
         <HelmetProvider>
@@ -40,5 +41,63 @@ describe('<Login />', () => {
 
     await waitFor(() => userEvent.clear(inputEmail));
     expect(getByRole('alert')).toHaveTextContent('Email is required');
+  });
+
+  it('should display password validation errors', async () => {
+    const { getByPlaceholderText, getByRole, getByText } = renderResult;
+    const inputEmail = getByPlaceholderText('Email');
+    const inputPassword = getByPlaceholderText('Password');
+    const submitButton = getByText('Log in');
+
+    await waitFor(() => {
+      userEvent.type(inputEmail, 'admin@email.com');
+      userEvent.click(submitButton);
+    });
+
+    expect(getByRole('alert')).toHaveTextContent('Password is required');
+
+    await waitFor(() => {
+      userEvent.type(inputPassword, '123');
+    });
+
+    expect(getByRole('alert')).toHaveTextContent(
+      'Password must be more than 5 chars.'
+    );
+  });
+
+  it('should submits form and calls mutation', async () => {
+    const { getByPlaceholderText, getByText } = renderResult;
+    const inputEmail = getByPlaceholderText('Email');
+    const inputPassword = getByPlaceholderText('Password');
+    const submitButton = getByText('Log in');
+
+    const formData = {
+      email: 'user@test.com',
+      password: '12345',
+    };
+
+    const mockedMutationResponse = jest.fn().mockResolvedValue({
+      data: {
+        login: {
+          ok: true,
+          token: 'XXX',
+          error: null,
+        },
+      },
+    });
+    mockedClient.setRequestHandler(LOGIN_MUTATION, mockedMutationResponse);
+
+    await waitFor(() => {
+      userEvent.type(inputEmail, formData.email);
+      userEvent.type(inputPassword, formData.password);
+      userEvent.click(submitButton);
+    });
+    expect(mockedMutationResponse).toHaveBeenCalledTimes(1);
+    expect(mockedMutationResponse).toHaveBeenCalledWith({
+      input: {
+        email: formData.email,
+        password: formData.password,
+      },
+    });
   });
 });
