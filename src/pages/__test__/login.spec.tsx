@@ -66,7 +66,7 @@ describe('<Login />', () => {
   });
 
   it('should submits form and calls mutation', async () => {
-    const { getByPlaceholderText, getByText } = renderResult;
+    const { getByPlaceholderText, getByText, getByRole } = renderResult;
     const inputEmail = getByPlaceholderText('Email');
     const inputPassword = getByPlaceholderText('Password');
     const submitButton = getByText('Log in');
@@ -81,11 +81,12 @@ describe('<Login />', () => {
         login: {
           ok: true,
           token: 'XXX',
-          error: null,
+          error: 'mutation-error',
         },
       },
     });
     mockedClient.setRequestHandler(LOGIN_MUTATION, mockedMutationResponse);
+    jest.spyOn(Storage.prototype, 'setItem');
 
     await waitFor(() => {
       userEvent.type(inputEmail, formData.email);
@@ -99,5 +100,9 @@ describe('<Login />', () => {
         password: formData.password,
       },
     });
+
+    const errorMessage = getByRole('alert');
+    expect(errorMessage).toHaveTextContent('mutation-error');
+    expect(localStorage.setItem).toHaveBeenCalledWith('nuber-token', 'XXX');
   });
 });
