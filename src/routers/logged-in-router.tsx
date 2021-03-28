@@ -10,26 +10,22 @@ import EditProfile from '../pages/user/edit-profile';
 import Search from '../pages/client/search';
 import Category from '../pages/client/category';
 import Restaurant from '../pages/client/restaurant';
+import MyRestaurants from '../pages/owner/my-restaurants';
 
-const ClientRouter = [
-  <Route key="/" path="/" exact>
-    <Restaurants />
-  </Route>,
-  <Route key="confirm-email" path="/confirm" exact>
-    <ConfirmEmail />
-  </Route>,
-  <Route key="edit-profile" path="/edit-profile" exact>
-    <EditProfile />
-  </Route>,
-  <Route key="search" path="/search">
-    <Search />
-  </Route>,
-  <Route key="category" path="/category/:slug">
-    <Category />
-  </Route>,
-  <Route key="restaurant" path="/restaurant/:id">
-    <Restaurant />
-  </Route>,
+const commonRoutes = [
+  { path: '/confirm', component: <ConfirmEmail /> },
+  { path: '/edit-profile', component: <EditProfile /> },
+];
+
+const clientRoutes = [
+  { path: '/', component: <Restaurants />, exact: true },
+  { path: '/search', component: <Search /> },
+  { path: '/category/:slug', component: <Category /> },
+  { path: '/restaurant/:id', component: <Restaurant /> },
+];
+
+const restaurantRoutes = [
+  { path: '/', component: <MyRestaurants />, exact: true },
 ];
 
 function LoggedInRouter() {
@@ -46,7 +42,26 @@ function LoggedInRouter() {
     <Router>
       <Header />
       <Switch>
-        {data.me.role === UserRole.CLIENT && ClientRouter}
+        {commonRoutes.map((r) => (
+          <Route key={r.path} path={r.path}>
+            {r.component}
+          </Route>
+        ))}
+
+        {data.me.role === UserRole.CLIENT &&
+          clientRoutes.map((r) => (
+            <Route key={r.path} path={r.path} exact={r.exact}>
+              {r.component}
+            </Route>
+          ))}
+
+        {data.me.role === UserRole.OWNER &&
+          restaurantRoutes.map((r) => (
+            <Route key={r.path} path={r.path} exact={r.exact}>
+              {r.component}
+            </Route>
+          ))}
+
         <Route>
           <NotFound />
         </Route>
