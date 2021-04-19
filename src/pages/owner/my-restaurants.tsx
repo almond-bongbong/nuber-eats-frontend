@@ -9,7 +9,7 @@ const MY_RESTAURANTS_QUERY = gql`
   query MyRestaurantsQuery {
     myRestaurants {
       ok
-      error
+      errors
       restaurants {
         ...RestaurantParts
       }
