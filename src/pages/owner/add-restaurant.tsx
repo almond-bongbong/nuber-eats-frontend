@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useApolloClient, useMutation } from '@apollo/client';
 import {
   CreateRestaurantMutation,
-  CreateRestaurantMutationVariables
+  CreateRestaurantMutationVariables,
 } from '../../__generated__/CreateRestaurantMutation';
 import { useForm } from 'react-hook-form';
 import Button from '../../components/button';
 import { Helmet } from 'react-helmet-async';
-import FormError from "../../components/form-error";
+import FormError from '../../components/form-error';
+import { MyRestaurantsQuery } from '../../__generated__/MyRestaurantsQuery';
+import { MY_RESTAURANTS_QUERY } from './my-restaurants';
+import { useHistory } from 'react-router-dom';
 
 const CREATE_RESTAURANT_MUTATION = gql`
   mutation CreateRestaurantMutation($input: CreateRestaurantInput!) {
     createRestaurant(input: $input) {
       ok
       error
+      restaurantId
     }
   }
 `;
@@ -26,12 +30,14 @@ interface CreateRestaurantForm {
 }
 
 function AddRestaurant() {
+  const apolloClient = useApolloClient();
+  const history = useHistory();
   const [uploading, setUploading] = useState(false);
   const [createRestaurantMutation, { data }] = useMutation<
     CreateRestaurantMutation,
     CreateRestaurantMutationVariables
   >(CREATE_RESTAURANT_MUTATION);
-  const { register, getValues, formState, errors, handleSubmit } = useForm<
+  const { register, getValues, formState, handleSubmit } = useForm<
     CreateRestaurantForm
   >({ mode: 'onChange' });
 
@@ -48,7 +54,7 @@ function AddRestaurant() {
         body,
       }).then((res) => res.json());
 
-      await createRestaurantMutation({
+      const { data } = await createRestaurantMutation({
         variables: {
           input: {
             name,
@@ -58,6 +64,31 @@ function AddRestaurant() {
           },
         },
       });
+
+      const result = apolloClient.readQuery<MyRestaurantsQuery>({
+        query: MY_RESTAURANTS_QUERY,
+      });
+      apolloClient.writeQuery({
+        query: MY_RESTAURANTS_QUERY,
+        data: {
+          myRestaurants: {
+            ...result?.myRestaurants,
+            restaurants: [
+              ...(result?.myRestaurants?.restaurants || []),
+              {
+                __typename: 'Restaurant',
+                id: data?.createRestaurant.restaurantId,
+                name,
+                address,
+                category: { __typename: 'Category', name: categoryName },
+                coverImage: url,
+                isPromoted: false,
+              },
+            ],
+          },
+        },
+      });
+      history.push('/');
     } catch (error) {
       console.error(error);
     } finally {
@@ -110,7 +141,9 @@ function AddRestaurant() {
           canClick={formState.isValid}
           actionText="Create Restaurant"
         />
-        {data?.createRestaurant.error && <FormError errorMessage={data.createRestaurant.error} />}
+        {data?.createRestaurant.error && (
+          <FormError errorMessage={data.createRestaurant.error} />
+        )}
       </form>
     </div>
   );
