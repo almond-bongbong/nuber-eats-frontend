@@ -6,7 +6,7 @@ import {
   CreateDishMutationVariables,
 } from '../../__generated__/CreateDishMutation';
 import { Helmet } from 'react-helmet-async';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import Button from '../../components/button';
 import { MY_RESTAURANTS_QUERY } from './my-restaurants';
 
@@ -18,6 +18,10 @@ interface Form {
   name: string;
   price: string;
   description: string;
+  options: {
+    name: string;
+    extra: string;
+  }[];
 }
 
 const CREATE_DISH_MUTATION = gql`
@@ -47,18 +51,29 @@ function AddDish() {
       },
     ],
   });
-  const { register, handleSubmit, formState, getValues } = useForm<Form>({
+  const { register, handleSubmit, formState, getValues, control } = useForm<
+    Form
+  >({
     mode: 'onChange',
   });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'options',
+  });
+
   const onSubmit = async () => {
-    const { name, price, description } = getValues();
+    const { name, price, description, options } = getValues();
     await createDishMutation({
       variables: {
         input: {
+          restaurantId,
           name,
           price: Number(price),
           description,
-          restaurantId,
+          options: options.map((o) => ({
+            name: o.name,
+            extra: Number(o.extra),
+          })),
         },
       },
     });
@@ -97,6 +112,42 @@ function AddDish() {
           placeholder="Description"
           ref={register({ required: 'Description is required.' })}
         />
+        <div className="my-10">
+          <h4 className="font-medium  mb-3 text-lg">Dish Options</h4>
+          <span
+            onClick={append}
+            className="cursor-pointer text-white bg-gray-900 py-1 px-2 mt-5 bg-"
+          >
+            Add Dish Option
+          </span>
+          {fields.map((f, i) => (
+            <div key={f.id} className="mt-5">
+              <input
+                className="py-2 px-4 focus:outline-none mr-3 focus:border-gray-600 border-2"
+                type="text"
+                placeholder="Option Name"
+                ref={register}
+                name={`options.${i}.name`}
+                defaultValue={f.name}
+              />
+              <input
+                className="py-2 px-4 focus:outline-none focus:border-gray-600 border-2"
+                type="number"
+                min={0}
+                placeholder="Option Extra"
+                ref={register}
+                name={`options.${i}.extra`}
+                defaultValue="0"
+              />
+              <span
+                className="cursor-pointer text-white bg-red-500 ml-3 py-3 px-4 mt-5 bg-"
+                onClick={() => remove(i)}
+              >
+                Delete Option
+              </span>
+            </div>
+          ))}
+        </div>
         <Button
           loading={loading}
           canClick={formState.isValid}
