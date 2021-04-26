@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
+import { VictoryChart, VictoryPie } from 'victory';
 import { DISH_FRAGMENT, RESTAURANT_FRAGMENT } from '../../fragments';
 import {
   MyRestaurantQuery,
   MyRestaurantQueryVariables,
 } from '../../__generated__/MyRestaurantQuery';
+import Dish from '../../components/dish';
 
 interface Params {
   id: string;
@@ -27,6 +29,20 @@ const MY_RESTAURANT_QUERY = gql`
   ${RESTAURANT_FRAGMENT}
   ${DISH_FRAGMENT}
 `;
+
+const chartData = [
+  { x: 1, y: 3000 },
+  { x: 2, y: 1500 },
+  { x: 3, y: 4250 },
+  { x: 4, y: 1250 },
+  { x: 5, y: 2300 },
+  { x: 6, y: 7150 },
+  { x: 7, y: 6830 },
+  { x: 8, y: 6830 },
+  { x: 9, y: 6830 },
+  { x: 10, y: 6830 },
+  { x: 11, y: 6830 },
+];
 
 function MyRestaurant() {
   const { id } = useParams<Params>();
@@ -58,7 +74,24 @@ function MyRestaurant() {
         <div className="mt-10">
           {data?.myRestaurant.restaurant?.menu.length === 0 ? (
             <h4 className="text-xl mb-5">Please upload a dish!</h4>
-          ) : null}
+          ) : (
+            <div className="grid mt-16 md:grid-cols-3 gap-x-5 gap-y-10">
+              {data?.myRestaurant.restaurant?.menu.map((dish) => (
+                <Dish
+                  key={dish.id}
+                  name={dish.name}
+                  description={dish.description}
+                  price={dish.price}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="mt-20">
+          <h4 className="text-center text-2xl font-medium">Sales</h4>
+          <div className="max-w-lg w-full mx-auto">
+            <VictoryPie data={chartData} />
+          </div>
         </div>
       </div>
     </div>
