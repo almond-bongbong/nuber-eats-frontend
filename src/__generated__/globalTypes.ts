@@ -32,6 +32,16 @@ export interface CreateDishInput {
   restaurantId: string;
 }
 
+export interface CreateOrderInput {
+  restaurantId: string;
+  items: CreateOrderItemInput[];
+}
+
+export interface CreateOrderItemInput {
+  dishId: string;
+  options?: OrderItemOptionInput[] | null;
+}
+
 export interface CreateRestaurantInput {
   name: string;
   coverImage?: string | null;
@@ -62,6 +72,12 @@ export interface LoginInput {
 
 export interface MyRestaurantInput {
   id: string;
+}
+
+export interface OrderItemOptionInput {
+  name: string;
+  choice?: string | null;
+  extra?: number | null;
 }
 
 export interface RestaurantInput {
