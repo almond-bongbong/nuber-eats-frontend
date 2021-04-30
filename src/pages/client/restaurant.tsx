@@ -13,6 +13,7 @@ import {
   CreateOrderMutationVariables,
 } from '../../__generated__/CreateOrderMutation';
 import { CreateOrderItemInput } from '../../__generated__/globalTypes';
+import DishOption from '../../components/dish-option';
 
 interface Params {
   id: string;
@@ -77,6 +78,33 @@ function Restaurant(): ReactElement {
     setOrderItems((prev) => prev.filter((p) => p.dishId !== dishId));
   };
 
+  const addOptionToItem = (dishId: string, optionName: string) => {
+    const findDish = orderItems.find((o) => o.dishId === dishId);
+    const isAlreadySelectedOption = findDish?.options?.find(
+      (o) => o.name === optionName
+    );
+
+    if (!findDish || isAlreadySelectedOption) {
+      return;
+    }
+
+    removeFromOrder(dishId);
+    findDish.options = [...(findDish.options || []), { name: optionName }];
+    setOrderItems((prev) => [findDish, ...prev]);
+  };
+
+  const removeOptionFromItem = (dishId: string, optionName: string) => {
+    const findDish = orderItems.find((o) => o.dishId === dishId);
+
+    if (!findDish) {
+      return;
+    }
+
+    removeFromOrder(dishId);
+    findDish.options = findDish.options?.filter((o) => o.name !== optionName);
+    setOrderItems((prev) => [findDish, ...prev]);
+  };
+
   return (
     <div>
       <Helmet>
@@ -111,11 +139,33 @@ function Restaurant(): ReactElement {
               name={dish.name}
               description={dish.description}
               price={dish.price}
-              isCustomer
               isSelected={orderItems.some((o) => o.dishId === dish.id)}
-              options={dish.options}
               addItemToOrder={addItemToOrder}
               removeFromOrder={removeFromOrder}
+              dishOptions={
+                dish.options?.length && (
+                  <div>
+                    <h5 className="mt-8 mb-3 font-medium">Dish Options</h5>
+                    {dish.options?.map((o) => {
+                      const isOptionSelected = orderItems
+                        .find((item) => item.dishId === dish.id)
+                        ?.options?.find((option) => option.name === o.name);
+
+                      return (
+                        <DishOption
+                          key={o.name}
+                          dishId={dish.id}
+                          name={o.name}
+                          extra={o.extra}
+                          isOptionSelected={Boolean(isOptionSelected)}
+                          addOptionToItem={addOptionToItem}
+                          removeOptionFromItem={removeOptionFromItem}
+                        />
+                      );
+                    })}
+                  </div>
+                )
+              }
             />
           ))}
         </div>
