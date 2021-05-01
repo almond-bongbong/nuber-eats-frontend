@@ -1,5 +1,5 @@
-import React, { ReactElement, useEffect } from 'react';
-import { gql, useApolloClient, useQuery } from '@apollo/client';
+import React, { ReactElement } from 'react';
+import { gql, useQuery } from '@apollo/client';
 import { RESTAURANT_FRAGMENT } from '../../fragments';
 import { MyRestaurantsQuery } from '../../__generated__/MyRestaurantsQuery';
 import { Helmet } from 'react-helmet-async';

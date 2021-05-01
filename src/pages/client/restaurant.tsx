@@ -1,5 +1,5 @@
 import React, { ReactElement, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { DISH_FRAGMENT, RESTAURANT_FRAGMENT } from '../../fragments';
 import { Helmet } from 'react-helmet-async';
@@ -41,11 +41,13 @@ const CREATE_ORDER_MUTATION = gql`
     createOrder(input: $input) {
       ok
       error
+      orderId
     }
   }
 `;
 
 function Restaurant(): ReactElement {
+  const history = useHistory();
   const { id } = useParams<Params>();
   const [orderStarted, setOrderStarted] = useState(false);
   const [orderItems, setOrderItems] = useState<CreateOrderItemInput[]>([]);
@@ -127,6 +129,9 @@ function Restaurant(): ReactElement {
 
       if (data?.createOrder.ok) {
         alert('Order created');
+        history.push(`/orders/${data.createOrder.orderId}`);
+      } else {
+        alert(data?.createOrder.error);
       }
     } catch (error) {
       console.error(error);
