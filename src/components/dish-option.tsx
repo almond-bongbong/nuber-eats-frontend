@@ -25,12 +25,12 @@ function DishOption({
   return (
     <span
       onClick={handleClick}
-      className={`flex border items-center ${
-        isOptionSelected ? 'border-gray-800' : ''
+      className={`border px-2 py-1 ${
+        isOptionSelected ? 'border-gray-800' : 'hover:border-gray-800'
       }`}
     >
-      <h6 className="mr-2">{name}</h6>
-      {extra && <h6 className="text-sm opacity-75">(${extra})</h6>}
+      <span className="mr-2">{name}</span>
+      {<span className="text-sm opacity-75">(${extra})</span>}
     </span>
   );
 }
