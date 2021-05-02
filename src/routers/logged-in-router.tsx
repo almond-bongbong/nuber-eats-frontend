@@ -14,10 +14,12 @@ import MyRestaurants from '../pages/owner/my-restaurants';
 import AddRestaurant from '../pages/owner/add-restaurant';
 import MyRestaurant from '../pages/owner/my-restaurant';
 import AddDish from '../pages/owner/add-dish';
+import Order from '../pages/user/order';
 
 const commonRoutes = [
   { path: '/confirm', component: <ConfirmEmail /> },
   { path: '/edit-profile', component: <EditProfile /> },
+  { path: '/orders/:id', component: <Order /> },
 ];
 
 const clientRoutes = [
