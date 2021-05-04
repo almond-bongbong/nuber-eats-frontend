@@ -43,11 +43,11 @@ const splitLink = split(
     );
   },
   wsLink,
-  httpLink
+  authLink.concat(httpLink)
 );
 
 export const client = new ApolloClient({
-  link: authLink.concat(splitLink),
+  link: splitLink,
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
