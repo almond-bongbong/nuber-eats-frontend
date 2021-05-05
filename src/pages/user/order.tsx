@@ -1,12 +1,17 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { gql } from '@apollo/client/core';
-import { useQuery } from '@apollo/client';
+import { useQuery, useSubscription } from '@apollo/client';
 import {
   GetOrderQuery,
   GetOrderQueryVariables,
 } from '../../__generated__/GetOrderQuery';
-import { Helmet } from "react-helmet-async";
+import { Helmet } from 'react-helmet-async';
+import { FULL_ORDER_FRAGMENT } from '../../fragments';
+import {
+  OrderUpdatesSubscription,
+  OrderUpdatesSubscriptionVariables,
+} from '../../__generated__/OrderUpdatesSubscription';
 
 interface Params {
   id: string;
@@ -18,21 +23,20 @@ const GET_ORDER_QUERY = gql`
       ok
       error
       order {
-        id
-        status
-        total
-        customer {
-          email
-        }
-        driver {
-          email
-        }
-        restaurant {
-          name
-        }
+        ...FullOrderParts
       }
     }
   }
+  ${FULL_ORDER_FRAGMENT}
+`;
+
+const ORDER_SUBSCRIPTION = gql`
+  subscription OrderUpdatesSubscription($input: OrderUpdatesInput!) {
+    orderUpdates(input: $input) {
+      ...FullOrderParts
+    }
+  }
+  ${FULL_ORDER_FRAGMENT}
 `;
 
 function Order() {
@@ -45,8 +49,16 @@ function Order() {
       },
     }
   );
+  const { data: subscriptionData } = useSubscription<
+    OrderUpdatesSubscription,
+    OrderUpdatesSubscriptionVariables
+  >(ORDER_SUBSCRIPTION, {
+    variables: {
+      input: { id },
+    },
+  });
 
-  console.log(data);
+  console.log(data, subscriptionData);
 
   return (
     <div className="mt-32 container flex justify-center">

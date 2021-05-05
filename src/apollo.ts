@@ -15,9 +15,12 @@ export const isLoggedInVar = makeVar(Boolean(token));
 export const authTokenVar = makeVar(token);
 
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:4001',
+  uri: 'ws://localhost:4001/graphql',
   options: {
     reconnect: true,
+    connectionParams: {
+      Authorization: localStorage.getItem(LOCALSTORAGE_TOKEN_KEY) || '',
+    },
   },
 });
 

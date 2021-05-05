@@ -92,6 +92,10 @@ export interface OrderItemOptionInput {
   extra?: number | null;
 }
 
+export interface OrderUpdatesInput {
+  id: string;
+}
+
 export interface RestaurantInput {
   restaurantId: string;
 }
