@@ -1,17 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { gql } from '@apollo/client/core';
-import { useQuery, useSubscription } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import {
   GetOrderQuery,
   GetOrderQueryVariables,
 } from '../../__generated__/GetOrderQuery';
 import { Helmet } from 'react-helmet-async';
 import { FULL_ORDER_FRAGMENT } from '../../fragments';
-import {
-  OrderUpdatesSubscription,
-  OrderUpdatesSubscriptionVariables,
-} from '../../__generated__/OrderUpdatesSubscription';
+import { OrderUpdatesSubscription } from '../../__generated__/OrderUpdatesSubscription';
 
 interface Params {
   id: string;
@@ -41,24 +38,39 @@ const ORDER_SUBSCRIPTION = gql`
 
 function Order() {
   const { id } = useParams<Params>();
-  const { data } = useQuery<GetOrderQuery, GetOrderQueryVariables>(
-    GET_ORDER_QUERY,
-    {
-      variables: {
-        input: { id },
-      },
-    }
-  );
-  const { data: subscriptionData } = useSubscription<
-    OrderUpdatesSubscription,
-    OrderUpdatesSubscriptionVariables
-  >(ORDER_SUBSCRIPTION, {
+  const { data, subscribeToMore } = useQuery<
+    GetOrderQuery,
+    GetOrderQueryVariables
+  >(GET_ORDER_QUERY, {
     variables: {
       input: { id },
     },
   });
 
-  console.log(data, subscriptionData);
+  useEffect(() => {
+    if (data?.getOrder.ok) {
+      subscribeToMore({
+        document: ORDER_SUBSCRIPTION,
+        variables: {
+          input: { id },
+        },
+        updateQuery: (
+          prev,
+          {
+            subscriptionData,
+          }: { subscriptionData: { data: OrderUpdatesSubscription } }
+        ) => {
+          if (!subscriptionData.data) return prev;
+          return {
+            getOrder: {
+              ...prev.getOrder,
+              order: { ...subscriptionData.data.orderUpdates },
+            },
+          };
+        },
+      });
+    }
+  }, [id, subscribeToMore, data]);
 
   return (
     <div className="mt-32 container flex justify-center">
