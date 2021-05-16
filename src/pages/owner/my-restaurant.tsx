@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { gql, useQuery } from '@apollo/client';
+import React, { useEffect } from 'react';
+import { Link, useHistory, useParams } from 'react-router-dom';
+import { gql, useQuery, useSubscription } from '@apollo/client';
 import {
   VictoryAxis,
   VictoryChart,
@@ -12,6 +12,7 @@ import {
 } from 'victory';
 import {
   DISH_FRAGMENT,
+  FULL_ORDER_FRAGMENT,
   ORDER_FRAGMENT,
   RESTAURANT_FRAGMENT,
 } from '../../fragments';
@@ -20,6 +21,7 @@ import {
   MyRestaurantQueryVariables,
 } from '../../__generated__/MyRestaurantQuery';
 import Dish from '../../components/dish';
+import { NewPendingOrderSubscription } from '../../__generated__/NewPendingOrderSubscription';
 
 interface Params {
   id: string;
@@ -46,12 +48,34 @@ const MY_RESTAURANT_QUERY = gql`
   ${ORDER_FRAGMENT}
 `;
 
+const NEW_PENDING_ORDER_SUBSCRIPTION = gql`
+  subscription NewPendingOrderSubscription {
+    newPendingOrder {
+      ...FullOrderParts
+    }
+  }
+  ${FULL_ORDER_FRAGMENT}
+`;
+
 function MyRestaurant() {
+  const history = useHistory();
   const { id } = useParams<Params>();
   const { data } = useQuery<MyRestaurantQuery, MyRestaurantQueryVariables>(
     MY_RESTAURANT_QUERY,
     { variables: { input: { id } } }
   );
+  const { data: pendingOrderSubscriptionData } = useSubscription<
+    NewPendingOrderSubscription
+  >(NEW_PENDING_ORDER_SUBSCRIPTION);
+
+  useEffect(() => {
+    if (pendingOrderSubscriptionData?.newPendingOrder.id) {
+      history.push(
+        `/orders/${pendingOrderSubscriptionData.newPendingOrder.id}`
+      );
+    }
+  }, [pendingOrderSubscriptionData, history]);
+
   return (
     <div>
       <div

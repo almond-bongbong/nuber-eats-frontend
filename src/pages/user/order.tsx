@@ -9,6 +9,8 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { FULL_ORDER_FRAGMENT } from '../../fragments';
 import { OrderUpdatesSubscription } from '../../__generated__/OrderUpdatesSubscription';
+import useMe from '../../hooks/useMe';
+import { OrderStatus, UserRole } from '../../__generated__/globalTypes';
 
 interface Params {
   id: string;
@@ -38,6 +40,7 @@ const ORDER_SUBSCRIPTION = gql`
 
 function Order() {
   const { id } = useParams<Params>();
+  const { data: userData } = useMe();
   const { data, subscribeToMore } = useQuery<
     GetOrderQuery,
     GetOrderQueryVariables
@@ -103,9 +106,22 @@ function Order() {
               {data?.getOrder.order?.driver?.email || 'Not yet.'}
             </span>
           </div>
-          <span className=" text-center mt-5 mb-3  text-2xl text-lime-600">
-            Status: {data?.getOrder.order?.status}
-          </span>
+
+          {userData?.me.role === UserRole.CLIENT && (
+            <span className=" text-center mt-5 mb-3  text-2xl text-lime-600">
+              Status: {data?.getOrder.order?.status}
+            </span>
+          )}
+          {userData?.me.role === UserRole.OWNER && (
+            <>
+              {data?.getOrder.order?.status === OrderStatus.Pending && (
+                <button className="btn">Accept Order</button>
+              )}
+              {data?.getOrder.order?.status === OrderStatus.Cooking && (
+                <button className="btn">Order Cooked</button>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
