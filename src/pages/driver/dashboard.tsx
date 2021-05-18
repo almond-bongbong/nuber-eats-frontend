@@ -1,7 +1,21 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useCallback, useEffect } from 'react';
 import GoogleMapReact from 'google-map-react';
 
 function Dashboard(): ReactElement {
+  const onSuccess: PositionCallback = useCallback((position) => {
+    console.log(position);
+  }, []);
+
+  const onError: PositionErrorCallback = useCallback((error) => {
+    console.error(error);
+  }, []);
+
+  useEffect(() => {
+    navigator.geolocation.watchPosition(onSuccess, onError, {
+      enableHighAccuracy: true,
+    });
+  }, [onSuccess, onError]);
+
   return (
     <div>
       <div
@@ -9,7 +23,9 @@ function Dashboard(): ReactElement {
         style={{ width: window.innerWidth, height: '95vh' }}
       >
         <GoogleMapReact
-          bootstrapURLKeys={{ key: 'AIzaSyD4Y-S7J_T1TV91_iDhVowyzkzvw3kWpwE' }}
+          bootstrapURLKeys={{
+            key: process.env.REACT_APP_GOOGLE_MAP_API_KEY || '',
+          }}
           defaultZoom={11}
           defaultCenter={{
             lat: 59.95,
