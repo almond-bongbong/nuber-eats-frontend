@@ -1,5 +1,6 @@
 import React, { ReactElement, useCallback, useEffect, useState } from 'react';
 import GoogleMapReact from 'google-map-react';
+import Driver from '../../components/driver';
 
 interface Coords {
   lat: number;
@@ -8,6 +9,7 @@ interface Coords {
 
 function Dashboard(): ReactElement {
   const [driverCoords, setDriverCoords] = useState<Coords>({ lat: 0, lng: 0 });
+  const [map, setMap] = useState<google.maps.Map>();
 
   const onSuccess: PositionCallback = useCallback((position) => {
     const { latitude, longitude } = position.coords;
@@ -28,32 +30,37 @@ function Dashboard(): ReactElement {
     };
   }, [onSuccess, onError]);
 
+  useEffect(() => {
+    if (map && google.maps) {
+      map.panTo(new google.maps.LatLng(driverCoords.lat, driverCoords.lng));
+
+      // const geocoder = new google.maps.Geocoder();
+      // geocoder.geocode(
+      //   {
+      //     location: new google.maps.LatLng(driverCoords.lat, driverCoords.lng),
+      //   },
+      //   (results, status) => {
+      //     console.log(results, status);
+      //   }
+      // );
+    }
+  }, [map, driverCoords.lat, driverCoords.lng]);
+
   const onApiLoaded = ({
     map,
-    maps,
   }: {
     map: google.maps.Map;
-    maps: {
-      LatLng: {
-        new (
-          latOrLatLngLiteral: number | google.maps.LatLngLiteral,
-          lngOrNoWrap?: number | boolean | null,
-          noWrap?: boolean
-        ): google.maps.LatLng;
-      };
-    };
     ref: Element | null;
   }) => {
-    setTimeout(() => {
-      map.panTo(new maps.LatLng(driverCoords.lat, driverCoords.lng));
-    }, 2000);
+    map.panTo(new google.maps.LatLng(driverCoords.lat, driverCoords.lng));
+    setMap(map);
   };
 
   return (
     <div>
       <div
         className="bg-gray-800"
-        style={{ width: window.innerWidth, height: '95vh' }}
+        style={{ width: window.innerWidth, height: '50vh' }}
       >
         <GoogleMapReact
           yesIWantToUseGoogleMapApiInternals
@@ -61,12 +68,14 @@ function Dashboard(): ReactElement {
           bootstrapURLKeys={{
             key: process.env.REACT_APP_GOOGLE_MAP_API_KEY || '',
           }}
-          defaultZoom={15}
+          defaultZoom={16}
           defaultCenter={{
             lat: 36.58,
             lng: 125.95,
           }}
-        />
+        >
+          <Driver lat={driverCoords.lat} lng={driverCoords.lng} />
+        </GoogleMapReact>
       </div>
     </div>
   );
