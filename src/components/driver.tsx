@@ -6,7 +6,7 @@ interface Props {
   $hover?: any;
 }
 
-function Driver({}: Props): ReactElement {
+function Driver({ lat, lng, $hover }: Props): ReactElement {
   return <div className="text-lg">🚖</div>;
 }
 

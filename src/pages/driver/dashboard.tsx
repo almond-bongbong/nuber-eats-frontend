@@ -1,15 +1,49 @@
 import React, { ReactElement, useCallback, useEffect, useState } from 'react';
 import GoogleMapReact from 'google-map-react';
 import Driver from '../../components/driver';
+import { gql } from '@apollo/client/core';
+import { FULL_ORDER_FRAGMENT } from '../../fragments';
+import { useMutation, useSubscription } from '@apollo/client';
+import { CookedOrderSubscription } from '../../__generated__/CookedOrderSubscription';
+import {
+  TakeOrderMutation,
+  TakeOrderMutationVariables,
+} from '../../__generated__/TakeOrderMutation';
+import { useHistory } from 'react-router-dom';
 
 interface Coords {
   lat: number;
   lng: number;
 }
 
+const COOKED_ORDER_SUBSCRIPTION = gql`
+  subscription CookedOrderSubscription {
+    cookedOrder {
+      ...FullOrderParts
+    }
+  }
+  ${FULL_ORDER_FRAGMENT}
+`;
+
+const TAKE_ORDER_MUTATION = gql`
+  mutation TakeOrderMutation($input: TakeOrderInput!) {
+    takeOrder(input: $input) {
+      ok
+      error
+    }
+  }
+`;
+
 function Dashboard(): ReactElement {
+  const history = useHistory();
   const [driverCoords, setDriverCoords] = useState<Coords>({ lat: 0, lng: 0 });
   const [map, setMap] = useState<google.maps.Map>();
+  const [
+    takeOrderMutation,
+    { loading: loadingTakeOrderMutation },
+  ] = useMutation<TakeOrderMutation, TakeOrderMutationVariables>(
+    TAKE_ORDER_MUTATION
+  );
 
   const onSuccess: PositionCallback = useCallback((position) => {
     const { latitude, longitude } = position.coords;
@@ -56,7 +90,7 @@ function Dashboard(): ReactElement {
     setMap(map);
   };
 
-  const onGetRouteClick = () => {
+  const makeRoute = useCallback(() => {
     if (map) {
       const directionsService = new google.maps.DirectionsService();
       const directionsRenderer = new google.maps.DirectionsRenderer();
@@ -82,6 +116,32 @@ function Dashboard(): ReactElement {
         }
       );
     }
+  }, [map, driverCoords.lat, driverCoords.lng]);
+
+  const { data: cookedOrderData } = useSubscription<CookedOrderSubscription>(
+    COOKED_ORDER_SUBSCRIPTION
+  );
+
+  useEffect(() => {
+    if (cookedOrderData?.cookedOrder.id) {
+      makeRoute();
+    }
+  }, [cookedOrderData, makeRoute]);
+
+  const handleTakeOrder = async (orderId: string) => {
+    const { data: takeOrderData } = await takeOrderMutation({
+      variables: {
+        input: {
+          id: orderId,
+        },
+      },
+    });
+
+    if (takeOrderData?.takeOrder.ok) {
+      history.push(`/orders/${orderId}`);
+    } else {
+      alert(takeOrderData?.takeOrder.error);
+    }
   };
 
   return (
@@ -106,9 +166,27 @@ function Dashboard(): ReactElement {
         </GoogleMapReact>
       </div>
 
-      <button type="button" onClick={onGetRouteClick}>
-        Get route
-      </button>
+      <div className="max-w-screen-sm mx-auto bg-white relative -top-10 shadow-lg py-8 px-5">
+        {cookedOrderData?.cookedOrder ? (
+          <>
+            <h1 className="text-center text-3xl font-medium">
+              New Cooked Order
+            </h1>
+            <h4 className="text-center my-3 text-2xl font-medium">
+              Pick it up soon @ {cookedOrderData?.cookedOrder.restaurant.name}
+            </h4>
+            <button
+              type="button"
+              onClick={() => handleTakeOrder(cookedOrderData?.cookedOrder.id)}
+              className="btn w-full mt-5"
+            >
+              Accept Challenge &rarr;
+            </button>
+          </>
+        ) : (
+          <h1 className="text-center text-3xl font-medium">No orders yet...</h1>
+        )}
+      </div>
     </div>
   );
 }
