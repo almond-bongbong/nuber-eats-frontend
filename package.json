@@ -42,10 +42,11 @@
   "scripts": {
     "prestart": "npm run apollo:codegen && npm run tailwind:build",
     "start": "npm run tailwind:build & react-scripts start",
-    "prebuild": "npm run tailwind:build",
+    "prebuild": "npm run tailwind:prodBuild",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "tailwind:build": "tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css",
+    "tailwind:prodBuild": "NODE_ENV=production npm run tailwind:build",
     "preapollo:codegen": "rimraf ./src/__generated__",
     "apollo:codegen": "apollo client:codegen src/__generated__ --outputFlat --target=typescript",
     "test": "react-scripts test",
