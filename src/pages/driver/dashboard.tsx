@@ -179,6 +179,7 @@ function Dashboard(): ReactElement {
               type="button"
               onClick={() => handleTakeOrder(cookedOrderData?.cookedOrder.id)}
               className="btn w-full mt-5"
+              disabled={loadingTakeOrderMutation}
             >
               Accept Challenge &rarr;
             </button>
